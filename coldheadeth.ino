@@ -143,17 +143,9 @@ void parse_command(WiFiClient *client, char *input)
   Serial.println(input);
   client->print(input);
   switch(input[0]) {
-    // GET option, various mlx configurations
-    case 'G':
-      GetConfig(client, input);
-      break;
-    // READ option, <RN>, return magnetometer N value
+    // READ option, <RN>, return ADC input N value
     case 'R':
       measurement(client, input[1]-'0'); // expect a uint8_t
-      break;
-    // SET option, various mlx configurations
-    case 'S':
-      SetConfig(client, input);
       break;
     // TEST option, <T> return 1
     case 'T':
