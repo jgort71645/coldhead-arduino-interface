@@ -2,10 +2,10 @@
 #include <ETH.h>
 
 //Define ADC interfaces
-#define CS_PIN **     // ESP8266 default SPI pins
-#define CLOCK_PIN 31  // Should work with any other GPIO pins, since the library does not formally
-#define MOSI_PIN **   // use SPI, but rather performs pin bit banging to emulate SPI communication.
-#define MISO_PIN **   //
+#define CS_PIN 4     // ESP8266 default SPI pins
+#define CLOCK_PIN 13  // Should work with any other GPIO pins, since the library does not formally
+#define MOSI_PIN 12   // use SPI, but rather performs pin bit banging to emulate SPI communication.
+#define MISO_PIN 11   //
 #define NCP3204 4     // MCP No.
 MCP320X mcp3204 = MCP320X(MCP3204, CLOCK_PIN, MOSI_PIN, MISO_PIN, CS_PIN);
 
