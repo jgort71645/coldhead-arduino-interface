@@ -2,8 +2,12 @@
 #include <ETH.h>
 
 //Define ADC interfaces
-#define NCP3204 4
-MCP320X mcp320
+#define CS_PIN D4     // ESP8266 default SPI pins
+#define CLOCK_PIN D5  // Should work with any other GPIO pins, since the library does not formally
+#define MOSI_PIN D7   // use SPI, but rather performs pin bit banging to emulate SPI communication.
+#define MISO_PIN D6   //
+#define NCP3204 4     // MCP No.
+MCP320X mcp3204 = MCP320X(MCP3204, CLOCK_PIN, MOSI_PIN, MISO_PIN, CS_PIN);
 
 //Define network settings
 static bool eth_connected = false;
@@ -158,81 +162,11 @@ void parse_command(WiFiClient *client, char *input)
   client->print(">");
 }
 
-// function to test for valid magID
-uint8_t TestMagID(WiFiClient *client, uint8_t magID)
+// function to record measurements from a coldhead ADC
+void measurement(WiFiClient *client, uint8_t chanID)
 {
-  if (magID>N_Mag-1) {
-    client->println("ERROR: Invalid magID");
-    return 255;
-  }
-  return 0;
-}
-
-// function to parse get commands and format replies
-void GetConfig(WiFiClient *client, char *input)
-{
-  uint8_t magID = input[2]-'0';
-  if (TestMagID(client, magID)) return;
-  switch(input[1]) {
-    // GET GAIN option, <GGN>, get magnetometer N gain
-    case 'G':
-      uint8_t gain;
-      mlx[magID].getGainSel(gain);
-      client->println(gain);
-      break;
-    // GET RESOLUTION option, <GRN>, get magnetometer N resolution for 3 axes
-    case 'R':
-      uint8_t res_x, res_y, res_z;
-      mlx[magID].getResolution(res_x, res_y, res_z);
-      client->print("[");
-      client->print(res_x);
-      client->print(",");
-      client->print(res_y);
-      client->print(",");
-      client->print(res_z);
-      client->println("]");
-      break;
-    default:
-      client->println("ERROR: Invalid GET command");
-      break;
-  }
-}
-
-// function to parse set commands and format replies
-void SetConfig(WiFiClient *client, char *input)
-{
-  uint8_t magID = input[2]-'0';
-  if (TestMagID(client, magID)) return;
-  switch(input[1]) {
-    // SET GAIN option, <GGN Y>, set magnetometer N gain to value Y
-    case 'G':
-      client->println(mlx[magID].setGainSel(input[4]-'0'));
-      break;
-    // SET RESOLUTION option, <SRN XYZ>, set magnetometer N resolution to XYZ value for three axes
-    case 'R':
-      client->println(mlx[magID].setResolution(input[4]-'0',input[5]-'0',input[6]-'0'));
-      break;
-    default:
-      client->println("ERROR: Invalid SET command");
-      break;
-  }
-}
-
-// function to record measurements from a magnetometer
-void measurement(WiFiClient *client, uint8_t magID)
-{
-  if (TestMagID(client, magID)) return;
-  MLX90393::txyz data;
-  mlx[magID].readData(data);
-  client->print("[");
-  client->print(data.x);
-  client->print(",");
-  client->print(data.y);
-  client->print(",");
-  client->print(data.z);
-  client->print(",");
-  client->print(data.t);
-  client->println("]");
+  if (chanID > 3) return;
+  client->print("Ch: " + chanID + "; Val: " + mcp3204.readADC(chanID))
 }
 
 void loop()
