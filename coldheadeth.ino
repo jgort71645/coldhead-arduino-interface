@@ -11,7 +11,7 @@ MCP320X mcp3204 = MCP320X(MCP3204, CLOCK_PIN, MOSI_PIN, MISO_PIN, CS_PIN);
 
 //Define network settings
 static bool eth_connected = false;
-IPAddress ip(10, 0, 0, 40);
+IPAddress ip(10, 0, 0, 39);
 IPAddress gate(10, 0, 0, 1);
 IPAddress mask(255, 255, 255, 0);
 
