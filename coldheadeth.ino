@@ -1,13 +1,13 @@
-#include <MCP320X.h>
+#include <MCP3XXX.h>
 #include <ETH.h>
 
 //Define ADC interfaces
 #define CS_PIN 4     // ESP8266 default SPI pins
-#define CLOCK_PIN 13  // Should work with any other GPIO pins, since the library does not formally
+#define CLK_PIN 13  // Should work with any other GPIO pins, since the library does not formally
 #define MOSI_PIN 12   // use SPI, but rather performs pin bit banging to emulate SPI communication.
 #define MISO_PIN 11   //
-#define NCP3204 4     // MCP No.
-MCP320X mcp3204 = MCP320X(MCP3204, CLOCK_PIN, MOSI_PIN, MISO_PIN, CS_PIN);
+typedef MCP3XXX_<12, 4, 1000000> MCP3204;
+MCP3204 adc;
 
 //Define network settings
 static bool eth_connected = false;
@@ -67,16 +67,7 @@ void setup()
   server.begin();
   server.setNoDelay(true);
   Serial.println("network and server setup initialized");
-  
-  Wire.begin();
-  delay(1000);
-  //uint8_t status;
-  for(uint8_t j = 0; j < 2; j++){
-    for(uint8_t i = 0; i < N_Mag; i++){
-      Serial.println(mlx[i].begin(i/2, i%2)); // 255 return is BAD!!!
-      delay(500);
-    }
-  }
+  adc.begin(CS_PIN, MOSI_PIN, MISO_PIN, CLK_PIN);
   Serial.println("setup done");
 }
 
@@ -166,7 +157,10 @@ void parse_command(WiFiClient *client, char *input)
 void measurement(WiFiClient *client, uint8_t chanID)
 {
   if (chanID > 3) return;
-  client->print("Ch: " + chanID + "; Val: " + mcp3204.readADC(chanID))
+  client->print("Ch: ");
+  client->print(chanID);
+  client->print("; Val: ");
+  client->println(adc.analogRead(chanID));
 }
 
 void loop()
