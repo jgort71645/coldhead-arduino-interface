@@ -2,11 +2,10 @@
 #include <ETH.h>
 
 //Define ADC interfaces
-#define CS_PIN 4     // ESP8266 default SPI pins
-#define CLK_PIN 13  // Should work with any other GPIO pins, since the library does not formally
-#define MOSI_PIN 12   // use SPI, but rather performs pin bit banging to emulate SPI communication.
-#define MISO_PIN 11   //
-typedef MCP3XXX_<12, 4, 1000000> MCP3204;
+#define CS_PIN 4     
+#define CLK_PIN 13  
+#define MOSI_PIN 12   
+#define MISO_PIN 11 
 MCP3204 adc;
 
 //Define network settings
