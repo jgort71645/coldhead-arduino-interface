@@ -2,10 +2,10 @@
 #include <ETH.h>
 
 //Define ADC interfaces
-#define CS_PIN 4     
-#define CLK_PIN 13  
-#define MOSI_PIN 12   
-#define MISO_PIN 11 
+#define CS_PIN 5     // ESP8266 default SPI pins
+#define CLK_PIN 32  // Should work with any other GPIO pins, since the library does not formally
+#define MOSI_PIN 16   // use SPI, but rather performs pin bit banging to emulate SPI communication.
+#define MISO_PIN 17   //
 MCP3204 adc;
 
 //Define network settings
@@ -62,7 +62,7 @@ void setup()
 
   WiFi.onEvent(WiFiEvent);
   ETH.begin();
-  ETH.config(ip,gate,mask,gate);
+  ETH.config(ip, gate, mask, gate);
   server.begin();
   server.setNoDelay(true);
   Serial.println("network and server setup initialized");
@@ -74,10 +74,10 @@ void setup()
 void handle_connection()
 {
   uint8_t i;
-  if (server.hasClient()){
-    for(i = 0; i < MAX_SRV_CLIENTS; i++){
+  if (server.hasClient()) {
+    for (i = 0; i < MAX_SRV_CLIENTS; i++) {
       //find free/disconnected spot
-      if (!serverClients[i] || !serverClients[i].connected()){
+      if (!serverClients[i] || !serverClients[i].connected()) {
         if (serverClients[i]) serverClients[i].stop();
         serverClients[i] = server.available();
         if (!serverClients[i]) Serial.println("available broken");
@@ -85,7 +85,7 @@ void handle_connection()
         Serial.print(i); Serial.print(' ');
         Serial.println(serverClients[i].remoteIP());
         serverClients[i].print("You are connection ");
-        serverClients[i].print(i);serverClients[i].print(" to ");
+        serverClients[i].print(i); serverClients[i].print(" to ");
         serverClients[i].println(ETH.getHostname());
         serverClients[i].print(">");
         //flush input buffer on connection
@@ -104,16 +104,16 @@ void handle_connection()
 void read_connection()
 {
   uint8_t i;
-  for(i = 0; i < MAX_SRV_CLIENTS; i++){
-    if (serverClients[i] && serverClients[i].connected()){
-      if (serverClients[i].available()){
-        char input[charLim+2];
+  for (i = 0; i < MAX_SRV_CLIENTS; i++) {
+    if (serverClients[i] && serverClients[i].connected()) {
+      if (serverClients[i].available()) {
+        char input[charLim + 2];
         uint8_t nRx = 0;
         bool incomplete = true;
-        while (serverClients[i].available()){
+        while (serverClients[i].available()) {
           input[nRx] = serverClients[i].read();
           if (input[nRx] == terminator) {
-            input[nRx+2] = '\0';
+            input[nRx + 2] = '\0';
             parse_command(&serverClients[i], input);
             incomplete = false;
             break;
@@ -136,10 +136,10 @@ void parse_command(WiFiClient *client, char *input)
   Serial.print("Received command: ");
   Serial.println(input);
   client->print(input);
-  switch(input[0]) {
+  switch (input[0]) {
     // READ option, <RN>, return ADC input N value
     case 'R':
-      measurement(client, input[1]-'0'); // expect a uint8_t
+      measurement(client, input[1] - '0'); // expect a uint8_t
       break;
     // TEST option, <T> return 1
     case 'T':
@@ -172,7 +172,7 @@ void loop()
   } else {
     Serial.println("ETH not connected!");
     delay(100);
-    for(uint8_t i = 0; i < MAX_SRV_CLIENTS; i++) {
+    for (uint8_t i = 0; i < MAX_SRV_CLIENTS; i++) {
       if (serverClients[i]) serverClients[i].stop();
     }
   }
